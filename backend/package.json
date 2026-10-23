@@ -1,0 +1,27 @@
+{
+  "name": "catalyst-backend",
+  "version": "1.0.0",
+  "description": "Catalyst Sprint 1 - Linear webhook ingestion, BullMQ job queue, and Docker sandbox git provisioning",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "tsx scripts/verify-logic.ts",
+    "mock:webhook": "tsx scripts/test-webhook.ts"
+  },
+  "dependencies": {
+    "bullmq": "^5.8.3",
+    "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^3.3.29",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.12",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5"
+  }
+}
