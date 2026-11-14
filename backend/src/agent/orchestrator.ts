@@ -1,6 +1,6 @@
 import { WorkspaceSandbox } from '../sandbox/workspace.js';
 import { CodebaseToolsManager } from '../tools/codebaseTools.js';
-import { LLMClient, LLMMessage } from './llmClient.js';
+import { LLMClient } from './llmClient.js';
 import { logger } from '../config/logger.js';
 
 export interface TaskInput {
@@ -41,7 +41,7 @@ Execution Guidelines:
 1. Search and inspect the repository using 'search_files', 'grep_search', and 'read_file' to locate the relevant code and tests.
 2. Formulate a hypothesis for the root cause.
 3. Edit the code carefully using 'edit_file' (or 'create_file' if adding tests or new modules).
-4. Run project tests or linters using 'run_terminal_command' (e.g., npm test, pytest, cargo test) to verify your fix and verify no regressions.
+4. Run project tests or linters using 'run_terminal_command' (e.g., npm test, pytest, cargo test) to verify your fix and ensure no regressions.
 5. Inspect your changes with 'get_git_diff'.
 6. Once satisfied, provide a comprehensive final response explaining:
    - Root Cause Analysis
@@ -49,54 +49,42 @@ Execution Guidelines:
    - Verification Results
 `;
 
-    const messages: LLMMessage[] = [
-      {
-        role: 'user',
-        content: `Please resolve the issue "${task.issueTitle}". Investigate the codebase, fix the bug, run tests, and report your results.`
-      }
-    ];
-
     logger.info({ jobId: task.jobId, issue: task.issueIdentifier }, 'Starting agent ReAct loop');
+
+    const chatSession = this.llmClient.createChatSession(systemPrompt);
+
+    let currentResponse = await chatSession.sendMessage(
+      `Please resolve the issue "${task.issueTitle}". Investigate the codebase, fix the bug, run tests, and report your results.`
+    );
 
     let finalSummary = '';
 
     for (let step = 1; step <= maxIterations; step++) {
       logger.info({ step, maxIterations }, 'Running agent loop step');
 
-      const response = await this.llmClient.generateStep(systemPrompt, messages);
-
-      if (response.text) {
-        logger.debug({ text: response.text }, 'Model response');
-        finalSummary = response.text;
+      if (currentResponse.text) {
+        logger.info({ summary: currentResponse.text }, 'Model explanation');
+        finalSummary = currentResponse.text;
       }
 
       // If no tool calls were requested, the agent is done
-      if (!response.toolCalls || response.toolCalls.length === 0) {
+      if (!currentResponse.toolCalls || currentResponse.toolCalls.length === 0) {
         logger.info('Agent indicated completion (no further tool calls)');
         break;
       }
 
-      // Record model's step in history
-      messages.push({
-        role: 'model',
-        content: response.text,
-        toolCalls: response.toolCalls
-      });
+      const toolResponses: Array<{ name: string; output: string }> = [];
 
-      // Execute each tool call
-      for (const toolCall of response.toolCalls) {
+      for (const toolCall of currentResponse.toolCalls) {
         logger.info({ tool: toolCall.name, args: toolCall.args }, 'Executing tool');
         const result = await toolsManager.executeTool(toolCall.name, toolCall.args);
-
-        // Record tool response
-        messages.push({
-          role: 'tool',
-          toolResponse: {
-            name: toolCall.name,
-            content: result.output
-          }
+        toolResponses.push({
+          name: toolCall.name,
+          output: result.output
         });
       }
+
+      currentResponse = await chatSession.sendToolResponses(toolResponses);
     }
 
     // Inspect final git diff
@@ -110,4 +98,3 @@ Execution Guidelines:
     };
   }
 }
-

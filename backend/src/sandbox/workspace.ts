@@ -138,7 +138,17 @@ export class WorkspaceSandbox {
    */
   async pushBranch(): Promise<void> {
     logger.info({ branch: this.fixBranch }, 'Pushing branch to remote');
-    await execAsync(`git push origin ${this.fixBranch}`, { cwd: this.workspacePath });
+    try {
+      await execAsync(`git push origin ${this.fixBranch}`, { cwd: this.workspacePath });
+    } catch (err: any) {
+      if (this.repoFullName.startsWith('/')) {
+        await execAsync(`git push "${this.repoFullName}" ${this.fixBranch}`, {
+          cwd: this.workspacePath
+        });
+        return;
+      }
+      throw err;
+    }
   }
 
   /**

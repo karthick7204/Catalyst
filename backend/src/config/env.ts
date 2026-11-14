@@ -24,7 +24,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
-  AI_MODEL_NAME: z.string().default('gemini-1.5-pro'),
+  AI_MODEL_NAME: z.string().default('gemini-3.1-flash-lite'),
 
   // Storage & Queue
   REDIS_HOST: z.string().default('localhost'),

@@ -27,6 +27,11 @@ export async function fetchLinearIssue(issueId: string) {
  * Post an update/comment on a Linear issue with markdown support
  */
 export async function postLinearComment(issueId: string, body: string) {
+  if (!config.LINEAR_API_KEY || issueId.startsWith('issue_')) {
+    logger.info({ issueId }, 'Linear comment simulated (no live API key or mock issue ID)');
+    return null;
+  }
+
   try {
     const client = getLinearClient();
     const commentPayload = await client.createComment({
@@ -35,8 +40,8 @@ export async function postLinearComment(issueId: string, body: string) {
     });
     return commentPayload;
   } catch (err) {
-    logger.error({ err, issueId }, 'Failed to post comment to Linear issue');
-    throw err;
+    logger.warn({ err, issueId }, 'Could not post comment to Linear issue (skipping)');
+    return null;
   }
 }
 
@@ -44,6 +49,11 @@ export async function postLinearComment(issueId: string, body: string) {
  * Update Linear issue state (e.g. to "In Review" or "In Progress")
  */
 export async function updateLinearIssueStatus(issueId: string, stateName: string) {
+  if (!config.LINEAR_API_KEY || issueId.startsWith('issue_')) {
+    logger.info({ issueId, stateName }, 'Linear status update simulated');
+    return;
+  }
+
   try {
     const client = getLinearClient();
     const issue = await client.issue(issueId);
@@ -62,7 +72,7 @@ export async function updateLinearIssueStatus(issueId: string, stateName: string
       logger.warn({ stateName }, 'Linear workflow state not found in team');
     }
   } catch (err) {
-    logger.error({ err, issueId, stateName }, 'Failed to update Linear issue status');
+    logger.warn({ err, issueId, stateName }, 'Failed to update Linear issue status (skipping)');
   }
 }
 

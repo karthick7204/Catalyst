@@ -53,6 +53,20 @@ export function extractGitHubRepo(text?: string | null): ExtractedRepoInfo | nul
     };
   }
 
+  // Pattern 4: Local repository path (for offline / sandbox testing)
+  const localRegex = /(?:repo|repository|target\s+repository)\s*:\s*(\/[a-zA-Z0-9_./-]+)/i;
+  const matchLocal = text.match(localRegex);
+  if (matchLocal) {
+    const localPath = matchLocal[1].replace(/\/+$/, '');
+    const repoName = localPath.split('/').pop() || 'demo-repo';
+    return {
+      owner: 'local',
+      repo: repoName,
+      fullName: localPath,
+      fullUrl: localPath
+    };
+  }
+
   return null;
 }
 

@@ -1,70 +1,44 @@
-import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { GoogleGenAI, Type } from '@google/genai';
 import { config } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { CODEBASE_TOOL_DEFINITIONS } from '../tools/codebaseTools.js';
 
-export interface LLMMessage {
-  role: 'user' | 'model' | 'tool';
-  content?: string;
-  toolCalls?: Array<{
-    id?: string;
-    name: string;
-    args: Record<string, any>;
-  }>;
-  toolResponse?: {
-    name: string;
-    content: string;
-  };
+export interface ToolCall {
+  name: string;
+  args: Record<string, any>;
+  id?: string;
 }
 
-export interface LLMResponse {
+export interface StepResponse {
   text?: string;
-  toolCalls?: Array<{
-    name: string;
-    args: Record<string, any>;
-  }>;
+  toolCalls?: ToolCall[];
+}
+
+export interface ChatSession {
+  sendMessage(prompt: string): Promise<StepResponse>;
+  sendToolResponses(responses: Array<{ name: string; output: string }>): Promise<StepResponse>;
 }
 
 export class LLMClient {
-  private geminiClient: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
     if (config.GEMINI_API_KEY) {
-      this.geminiClient = new GoogleGenerativeAI(config.GEMINI_API_KEY);
+      this.ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
     }
   }
 
-  async generateStep(
-    systemPrompt: string,
-    history: LLMMessage[]
-  ): Promise<LLMResponse> {
-    if (config.AI_PROVIDER === 'gemini' && this.geminiClient) {
-      return this.callGemini(systemPrompt, history);
+  createChatSession(systemPrompt: string): ChatSession {
+    if (!this.ai) {
+      throw new Error('GEMINI_API_KEY is not configured in environment variables');
     }
 
-    // Fallback: mock response or generic provider if no API key yet configured
-    if (!config.GEMINI_API_KEY && !config.ANTHROPIC_API_KEY && !config.OPENAI_API_KEY) {
-      logger.warn('No LLM API keys configured. Running in simulated agent mode.');
-      return {
-        text: 'Catalyst analyzed the bug report and checked the repository. Please configure GEMINI_API_KEY in .env to run autonomous LLM tool executions.'
-      };
-    }
-
-    throw new Error(`Configured AI_PROVIDER ${config.AI_PROVIDER} not yet initialized.`);
-  }
-
-  private async callGemini(
-    systemPrompt: string,
-    history: LLMMessage[]
-  ): Promise<LLMResponse> {
-    if (!this.geminiClient) throw new Error('Gemini client not initialized');
-
-    // Convert CODEBASE_TOOL_DEFINITIONS to Gemini function declarations
-    const functionDeclarations: FunctionDeclaration[] = CODEBASE_TOOL_DEFINITIONS.map((tool) => {
+    // Convert tool definitions to GoogleGenAI function declarations
+    const functionDeclarations = CODEBASE_TOOL_DEFINITIONS.map((tool) => {
       const properties: Record<string, any> = {};
       for (const [key, prop] of Object.entries(tool.parameters.properties)) {
         properties[key] = {
-          type: prop.type === 'number' ? SchemaType.NUMBER : SchemaType.STRING,
+          type: prop.type === 'number' ? Type.NUMBER : Type.STRING,
           description: prop.description
         };
       }
@@ -73,83 +47,84 @@ export class LLMClient {
         name: tool.name,
         description: tool.description,
         parameters: {
-          type: SchemaType.OBJECT,
+          type: Type.OBJECT,
           properties,
           required: tool.parameters.required
         }
       };
     });
 
-    const model = this.geminiClient.getGenerativeModel({
-      model: config.AI_MODEL_NAME || 'gemini-1.5-pro',
-      systemInstruction: systemPrompt,
-      tools: [{ functionDeclarations }]
+    const modelName = config.AI_MODEL_NAME || 'gemini-3.5-flash';
+
+    const chat = this.ai.chats.create({
+      model: modelName,
+      config: {
+        systemInstruction: systemPrompt,
+        tools: [{ functionDeclarations }]
+      }
     });
 
-    // Format contents for GoogleGenerativeAI
-    const contents = history.map((msg) => {
-      if (msg.role === 'tool' && msg.toolResponse) {
-        return {
-          role: 'function',
-          parts: [
-            {
-              functionResponse: {
-                name: msg.toolResponse.name,
-                response: { output: msg.toolResponse.content }
-              }
-            }
-          ]
-        };
-      }
-
-      const parts: any[] = [];
-      if (msg.content) {
-        parts.push({ text: msg.content });
-      }
-      if (msg.toolCalls) {
-        for (const tc of msg.toolCalls) {
-          parts.push({
-            functionCall: {
-              name: tc.name,
-              args: tc.args
-            }
+    const parseResponse = (res: any): StepResponse => {
+      const toolCalls: ToolCall[] = [];
+      if (res.functionCalls && Array.isArray(res.functionCalls)) {
+        for (const fc of res.functionCalls) {
+          toolCalls.push({
+            name: fc.name,
+            args: fc.args || {},
+            id: fc.id
           });
         }
       }
 
       return {
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts
+        text: res.text || undefined,
+        toolCalls: toolCalls.length > 0 ? toolCalls : undefined
       };
-    });
-
-    const result = await model.generateContent({
-      contents: contents as any
-    });
-
-    const candidate = result.response.candidates?.[0];
-    if (!candidate || !candidate.content || !candidate.content.parts) {
-      return { text: 'No response from model' };
-    }
-
-    let responseText = '';
-    const toolCalls: Array<{ name: string; args: Record<string, any> }> = [];
-
-    for (const part of candidate.content.parts) {
-      if (part.text) {
-        responseText += part.text;
-      }
-      if (part.functionCall) {
-        toolCalls.push({
-          name: part.functionCall.name,
-          args: (part.functionCall.args as Record<string, any>) || {}
-        });
-      }
-    }
+    };
 
     return {
-      text: responseText.trim() || undefined,
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined
+      async sendMessage(prompt: string): Promise<StepResponse> {
+        logger.debug({ prompt }, 'Sending prompt to Gemini');
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const res = await chat.sendMessage({ message: prompt });
+            return parseResponse(res);
+          } catch (err: any) {
+            if ((err.status === 503 || err.status === 429) && attempt < 3) {
+              logger.warn(`Gemini temporary rate limit / spike (attempt ${attempt}). Retrying in 2 seconds...`);
+              await new Promise((r) => setTimeout(r, 2000));
+              continue;
+            }
+            throw err;
+          }
+        }
+        throw new Error('Failed to send message after retries');
+      },
+
+      async sendToolResponses(responses: Array<{ name: string; output: string }>): Promise<StepResponse> {
+        logger.debug({ responseCount: responses.length }, 'Sending tool responses to Gemini');
+        const formatted = responses.map((r) => ({
+          functionResponse: {
+            name: r.name,
+            response: { output: r.output }
+          }
+        }));
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const res = await chat.sendMessage({ message: formatted as any });
+            return parseResponse(res);
+          } catch (err: any) {
+            if ((err.status === 503 || err.status === 429) && attempt < 3) {
+              logger.warn(`Gemini temporary rate limit / spike (attempt ${attempt}). Retrying in 2 seconds...`);
+              await new Promise((r) => setTimeout(r, 2000));
+              continue;
+            }
+            throw err;
+          }
+        }
+        throw new Error('Failed to send tool responses after retries');
+      }
     };
   }
 }

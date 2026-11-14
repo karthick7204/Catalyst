@@ -10,15 +10,24 @@ import { postLinearComment } from '../linear/client.js';
 
 export function verifyLinearWebhookSignature(rawBody: string, signature?: string): boolean {
   if (!config.LINEAR_WEBHOOK_SECRET) {
-    logger.warn('LINEAR_WEBHOOK_SECRET is not configured; skipping signature verification (dev only)');
+    return true;
+  }
+
+  // Allow unsigned requests in development mode for local script testing
+  if (config.NODE_ENV === 'development' && !signature) {
+    logger.warn('Skipping webhook signature verification for unsigned request in development mode');
     return true;
   }
 
   if (!signature) return false;
 
-  const hmac = crypto.createHmac('sha256', config.LINEAR_WEBHOOK_SECRET);
-  const digest = hmac.update(rawBody).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
+  try {
+    const hmac = crypto.createHmac('sha256', config.LINEAR_WEBHOOK_SECRET);
+    const digest = hmac.update(rawBody).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
+  } catch (err) {
+    return false;
+  }
 }
 
 export async function handleLinearWebhook(req: FastifyRequest, reply: FastifyReply) {

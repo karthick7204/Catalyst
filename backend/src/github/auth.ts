@@ -7,6 +7,12 @@ export interface GitHubAuthCredentials {
   authHeader: string;
 }
 
+function isRealToken(token?: string): boolean {
+  if (!token) return false;
+  const trimmed = token.trim();
+  return trimmed.length > 10 && !trimmed.includes('your_github_token_here') && !trimmed.includes('placeholder');
+}
+
 /**
  * Mint a scoped token for GitHub operations (GitHub App Installation token or PAT)
  */
@@ -27,19 +33,29 @@ export async function getGitHubAuthToken(): Promise<string> {
     }
   }
 
-  // Fallback to PAT if provided
-  if (config.GITHUB_TOKEN) {
-    return config.GITHUB_TOKEN;
+  // Fallback to PAT if provided and not placeholder
+  if (isRealToken(config.GITHUB_TOKEN)) {
+    return config.GITHUB_TOKEN!.trim();
   }
 
-  throw new Error('No GitHub credentials found. Provide GITHUB_APP_* credentials or GITHUB_TOKEN');
+  throw new Error('No valid GitHub credentials found. Provide GITHUB_APP_* credentials or a valid GITHUB_TOKEN');
 }
 
 /**
  * Returns an authenticated Git remote URL for cloning and pushing
  */
 export async function getAuthenticatedCloneUrl(repoFullName: string): Promise<string> {
-  const token = await getGitHubAuthToken();
-  return `https://x-access-token:${token}@github.com/${repoFullName}.git`;
-}
+  // If it's a local repository path, clone directly from local disk
+  if (repoFullName.startsWith('/') || repoFullName.startsWith('./') || repoFullName.startsWith('file://')) {
+    return repoFullName.replace(/^file:\/\//, '');
+  }
 
+  try {
+    const token = await getGitHubAuthToken();
+    return `https://x-access-token:${token}@github.com/${repoFullName}.git`;
+  } catch {
+    // If no auth token is available, attempt cloning as a public repo
+    logger.info({ repo: repoFullName }, 'Cloning via public HTTPS (no valid GitHub token provided)');
+    return `https://github.com/${repoFullName}.git`;
+  }
+}

@@ -5,6 +5,7 @@ import { logger } from './config/logger.js';
 import { handleLinearWebhook } from './webhooks/linearWebhook.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { jobRoutes } from './routes/jobs.js';
+import { dashboardRoutes } from './routes/dashboard.js';
 
 export function createServer(): FastifyInstance {
   const fastify = Fastify({

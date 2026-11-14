@@ -1,0 +1,13 @@
+{
+  "name": "catalyst",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Catalyst: Production Autonomous AI Coding Agent",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}
+
