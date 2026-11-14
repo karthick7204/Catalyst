@@ -57,7 +57,7 @@ export function QueueSidebar({
       case 'APPROVED':
         return (
           <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-badge-mergedBg text-badge-mergedText border border-badge-mergedBorder flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span>PR Created</span>
           </span>
         );
@@ -79,7 +79,7 @@ export function QueueSidebar({
         );
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-warm-border text-warm-muted">
+          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-warm-panel border border-warm-border text-warm-muted">
             {status}
           </span>
         );
@@ -87,7 +87,7 @@ export function QueueSidebar({
   };
 
   return (
-    <aside className="w-80 bg-warm-panel border-r border-warm-border flex flex-col justify-between shrink-0 text-xs">
+    <aside className="w-80 bg-warm-panel border-r border-warm-border flex flex-col justify-between shrink-0 text-xs transition-colors duration-150">
       <div>
         {/* Top Header */}
         <div className="p-3.5 border-b border-warm-border flex items-center justify-between">
@@ -131,7 +131,9 @@ export function QueueSidebar({
             <button
               onClick={() => setFilterTab('all')}
               className={`px-2 py-0.5 rounded transition ${
-                filterTab === 'all' ? 'bg-[#1f1b18] text-[#f8f5ee] font-semibold' : 'hover:text-warm-text'
+                filterTab === 'all'
+                  ? 'bg-primaryBtn-bg text-primaryBtn-text font-semibold shadow-sm'
+                  : 'hover:text-warm-text'
               }`}
             >
               All ({jobs.length})
@@ -139,7 +141,9 @@ export function QueueSidebar({
             <button
               onClick={() => setFilterTab('review')}
               className={`px-2 py-0.5 rounded transition ${
-                filterTab === 'review' ? 'bg-[#1f1b18] text-[#f8f5ee] font-semibold' : 'hover:text-warm-text'
+                filterTab === 'review'
+                  ? 'bg-primaryBtn-bg text-primaryBtn-text font-semibold shadow-sm'
+                  : 'hover:text-warm-text'
               }`}
             >
               Review ({reviewCount})
@@ -147,7 +151,9 @@ export function QueueSidebar({
             <button
               onClick={() => setFilterTab('fixing')}
               className={`px-2 py-0.5 rounded transition ${
-                filterTab === 'fixing' ? 'bg-[#1f1b18] text-[#f8f5ee] font-semibold' : 'hover:text-warm-text'
+                filterTab === 'fixing'
+                  ? 'bg-primaryBtn-bg text-primaryBtn-text font-semibold shadow-sm'
+                  : 'hover:text-warm-text'
               }`}
             >
               Fixing ({fixingCount})
@@ -155,7 +161,9 @@ export function QueueSidebar({
             <button
               onClick={() => setFilterTab('merged')}
               className={`px-2 py-0.5 rounded transition ${
-                filterTab === 'merged' ? 'bg-[#1f1b18] text-[#f8f5ee] font-semibold' : 'hover:text-warm-text'
+                filterTab === 'merged'
+                  ? 'bg-primaryBtn-bg text-primaryBtn-text font-semibold shadow-sm'
+                  : 'hover:text-warm-text'
               }`}
             >
               Merged ({mergedCount})
@@ -183,7 +191,7 @@ export function QueueSidebar({
                 onClick={() => onSelectJob(job.id)}
                 className={`p-3 rounded-lg border transition cursor-pointer text-left ${
                   isSelected
-                    ? 'bg-warm-surface border-[#1f1b18] shadow-sm ring-1 ring-[#1f1b18]/10'
+                    ? 'bg-warm-surface border-primaryBtn-bg shadow-sm ring-1 ring-primaryBtn-bg/30'
                     : 'bg-warm-surface/80 border-warm-border hover:bg-warm-surface hover:border-warm-borderDark'
                 }`}
               >
@@ -223,7 +231,7 @@ export function QueueSidebar({
       {/* Bottom Footer Status */}
       <div className="p-3 border-t border-warm-border bg-warm-surface/60 flex items-center justify-between text-[10px] text-warm-muted font-mono">
         <span>Worker PID: 4091</span>
-        <span className="flex items-center space-x-1 text-emerald-600 font-medium">
+        <span className="flex items-center space-x-1 text-emerald-500 font-medium">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Daemon Healthy</span>
         </span>

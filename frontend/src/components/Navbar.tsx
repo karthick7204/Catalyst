@@ -1,19 +1,23 @@
 'use client';
 
 import React from 'react';
-import { Search, Bell, HelpCircle, ChevronDown } from 'lucide-react';
+import { Search, Bell, HelpCircle, ChevronDown, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
   repoName: string;
 }
 
 export function Navbar({ repoName }: NavbarProps) {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <nav className="h-14 border-b border-warm-border bg-warm-surface px-4 flex items-center justify-between text-xs sticky top-0 z-40">
+    <nav className="h-14 border-b border-warm-border bg-warm-surface px-4 flex items-center justify-between text-xs sticky top-0 z-40 transition-colors duration-150">
       {/* Left: Logo & Repo Dropdown */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2 font-bold text-sm tracking-tight text-warm-text pr-3 border-r border-warm-border">
-          <div className="w-6 h-6 rounded bg-[#2a2420] text-[#f8f5ee] flex items-center justify-center text-xs font-black">
+          <div className="w-6 h-6 rounded bg-[#2a2420] dark:bg-amber-400 text-[#f8f5ee] dark:text-[#0b0f17] flex items-center justify-center text-xs font-black transition-colors">
             P
           </div>
           <span>PatchCraft</span>
@@ -28,7 +32,7 @@ export function Navbar({ repoName }: NavbarProps) {
         {/* Integration status */}
         <div className="hidden md:flex items-center space-x-1.5 text-warm-muted pl-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span className="text-[11px]">Linear & GitHub connected</span>
+          <span className="text-[11px]">Linear &amp; GitHub connected</span>
         </div>
       </div>
 
@@ -45,8 +49,28 @@ export function Navbar({ repoName }: NavbarProps) {
         </div>
       </div>
 
-      {/* Right: Actions & User Avatar */}
-      <div className="flex items-center space-x-3">
+      {/* Right: Actions, Theme Toggle & User Avatar */}
+      <div className="flex items-center space-x-2.5">
+        {/* Dark / Light Mode Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className="p-1.5 rounded border border-warm-border bg-warm-panel hover:bg-warm-border/60 text-warm-text transition flex items-center space-x-1.5"
+          title={`Switch to ${isDark ? 'Light' : 'Dark'} mode`}
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[11px] font-medium hidden sm:inline text-warm-text">Light</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-stone-700" />
+              <span className="text-[11px] font-medium hidden sm:inline text-warm-text">Dark</span>
+            </>
+          )}
+        </button>
+
         <button className="text-warm-muted hover:text-warm-text p-1 transition" title="Notifications">
           <Bell className="w-4 h-4" />
         </button>
@@ -56,7 +80,7 @@ export function Navbar({ repoName }: NavbarProps) {
         </button>
 
         <div className="flex items-center space-x-2 pl-2 border-l border-warm-border">
-          <div className="w-7 h-7 rounded-full bg-stone-300 border border-warm-border overflow-hidden flex items-center justify-center font-bold text-xs text-stone-700">
+          <div className="w-7 h-7 rounded-full bg-stone-300 dark:bg-slate-700 border border-warm-border overflow-hidden flex items-center justify-center font-bold text-xs text-stone-700 dark:text-slate-200">
             K
           </div>
         </div>

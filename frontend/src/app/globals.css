@@ -4,10 +4,88 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+:root {
+  --bg: #f8f5ee;
+  --surface: #ffffff;
+  --panel: #f3efe6;
+  --sidebar: #1f1b18;
+  --sidebar-hover: #2a2420;
+  --sidebar-text: #d6d3d1;
+  --sidebar-border: #2d2723;
+  --border: #e5ded3;
+  --border-dark: #d8cfc2;
+  --text: #221f1d;
+  --muted: #78716c;
+  --subtle: #a8a29e;
+  --btn-primary-bg: #1f1b18;
+  --btn-primary-hover: #2f2723;
+  --btn-primary-text: #f8f5ee;
+  --card-hero-bg: #614e3e;
+  --card-hero-text: #fef3c7;
+  --code-editor-bg: #faf8f4;
+  --code-header-bg: #f3efe6;
+
+  /* Badges */
+  --badge-review-bg: #fef3c7;
+  --badge-review-text: #b45309;
+  --badge-review-border: #fde68a;
+
+  --badge-merged-bg: #dcfce7;
+  --badge-merged-text: #15803d;
+  --badge-merged-border: #bbf7d0;
+
+  --badge-fixing-bg: #e0f2fe;
+  --badge-fixing-text: #0369a1;
+  --badge-fixing-border: #bae6fd;
+
+  --badge-failed-bg: #fee2e2;
+  --badge-failed-text: #b91c1c;
+  --badge-failed-border: #fecaca;
+}
+
+.dark {
+  --bg: #090d14;
+  --surface: #0f1623;
+  --panel: #131c2d;
+  --sidebar: #06090e;
+  --sidebar-hover: #101726;
+  --sidebar-text: #94a3b8;
+  --sidebar-border: #1a2333;
+  --border: #1e293b;
+  --border-dark: #334155;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --subtle: #64748b;
+  --btn-primary-bg: #2563eb;
+  --btn-primary-hover: #1d4ed8;
+  --btn-primary-text: #ffffff;
+  --card-hero-bg: #1e293b;
+  --card-hero-text: #f1f5f9;
+  --code-editor-bg: #06090f;
+  --code-header-bg: #0d131f;
+
+  /* Badges */
+  --badge-review-bg: rgba(245, 158, 11, 0.15);
+  --badge-review-text: #fbbf24;
+  --badge-review-border: rgba(245, 158, 11, 0.35);
+
+  --badge-merged-bg: rgba(16, 185, 129, 0.15);
+  --badge-merged-text: #34d399;
+  --badge-merged-border: rgba(16, 185, 129, 0.35);
+
+  --badge-fixing-bg: rgba(14, 165, 233, 0.15);
+  --badge-fixing-text: #38bdf8;
+  --badge-fixing-border: rgba(14, 165, 233, 0.35);
+
+  --badge-failed-bg: rgba(239, 68, 68, 0.15);
+  --badge-failed-text: #f87171;
+  --badge-failed-border: rgba(239, 68, 68, 0.35);
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8f5ee;
-  color: #221f1d;
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -24,9 +102,9 @@ pre, code {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d8cfc2;
+  background: var(--border-dark);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8ac9c;
+  background: var(--muted);
 }

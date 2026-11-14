@@ -37,7 +37,7 @@ export function ConfirmModal({
         {/* Modal Header */}
         <div className="p-4 flex items-start justify-between border-b border-warm-border bg-warm-panel/50">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-[#1f1b18] text-warm-bg flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primaryBtn-bg text-primaryBtn-text flex items-center justify-center">
               <GitPullRequest className="w-4 h-4 text-amber-400" />
             </div>
             <div>
@@ -126,7 +126,7 @@ export function ConfirmModal({
               type="checkbox"
               checked={runE2E}
               onChange={(e) => setRunE2E(e.target.checked)}
-              className="rounded border-warm-border text-[#1f1b18] focus:ring-0"
+              className="rounded border-warm-border text-primaryBtn-bg focus:ring-0"
             />
             <span className="font-medium">
               Run full end-to-end integration tests upon PR opening
@@ -146,7 +146,7 @@ export function ConfirmModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-1.5 rounded bg-[#1f1b18] hover:bg-[#2f2723] text-stone-100 font-bold flex items-center space-x-1.5 shadow transition disabled:opacity-50"
+              className="px-4 py-1.5 rounded bg-primaryBtn-bg hover:bg-primaryBtn-hover text-primaryBtn-text font-bold flex items-center space-x-1.5 shadow transition disabled:opacity-50"
             >
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
@@ -163,3 +163,4 @@ export function ConfirmModal({
     </div>
   );
 }
+

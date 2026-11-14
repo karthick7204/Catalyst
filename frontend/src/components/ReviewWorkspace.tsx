@@ -203,7 +203,7 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 rounded bg-[#1f1b18] hover:bg-[#2f2723] text-stone-100 font-bold text-xs flex items-center space-x-2 shadow transition"
+              className="px-5 py-2.5 rounded bg-primaryBtn-bg hover:bg-primaryBtn-hover text-primaryBtn-text font-bold text-xs flex items-center space-x-2 shadow transition"
             >
               <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
               <span>Approve &amp; Push PR</span>
@@ -230,7 +230,7 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
       {isPR && (
         <div className="mb-5 bg-warm-panel/80 border border-warm-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-[#614e3e] text-amber-100 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-cardHero-bg text-cardHero-text flex items-center justify-center shrink-0 shadow-sm">
               <Check className="w-6 h-6 stroke-[3]" />
             </div>
 
@@ -250,13 +250,13 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
                     href={job.prUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 rounded bg-[#1f1b18] hover:bg-[#2f2723] text-stone-100 font-bold text-xs flex items-center space-x-2 shadow transition"
+                    className="px-4 py-2 rounded bg-primaryBtn-bg hover:bg-primaryBtn-hover text-primaryBtn-text font-bold text-xs flex items-center space-x-2 shadow transition"
                   >
                     <GitPullRequest className="w-3.5 h-3.5 text-amber-400" />
                     <span>View GitHub PR #{prNumber} ↗</span>
                   </a>
                 ) : (
-                  <button className="px-4 py-2 rounded bg-[#1f1b18] text-stone-100 font-bold text-xs flex items-center space-x-2">
+                  <button className="px-4 py-2 rounded bg-primaryBtn-bg text-primaryBtn-text font-bold text-xs flex items-center space-x-2">
                     <GitPullRequest className="w-3.5 h-3.5 text-amber-400" />
                     <span>View GitHub PR #{prNumber} ↗</span>
                   </button>
@@ -278,22 +278,22 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
       )}
 
       {/* 4. Local CLI Run Command Box (macOS window style) */}
-      <div className="mb-5 bg-[#1f1b18] border border-[#2d2723] rounded-lg overflow-hidden text-stone-300 font-mono shadow-sm">
-        <div className="px-4 py-2.5 bg-[#171412] border-b border-[#2d2723] flex items-center justify-between text-[11px]">
+      <div className="mb-5 bg-warm-sidebar border border-warm-sidebarBorder rounded-lg overflow-hidden text-stone-300 font-mono shadow-sm">
+        <div className="px-4 py-2.5 bg-warm-sidebarHover border-b border-warm-sidebarBorder flex items-center justify-between text-[11px]">
           <div className="flex items-center space-x-2.5">
             <div className="flex items-center space-x-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
             </div>
-            <span className="text-stone-400 font-sans">
+            <span className="text-stone-300 font-sans">
               Run verified patch locally in your development shell
             </span>
           </div>
 
           <button
             onClick={handleCopy}
-            className="flex items-center space-x-1.5 text-stone-300 hover:text-stone-100 px-2 py-0.5 rounded bg-[#27211d] border border-[#3e342f] transition text-[10px]"
+            className="flex items-center space-x-1.5 text-stone-300 hover:text-stone-100 px-2 py-0.5 rounded bg-warm-sidebarHover/80 border border-warm-sidebarBorder transition text-[10px]"
           >
             {copied ? (
               <>
@@ -501,7 +501,7 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
       {/* 7. Bottom Status & Lead Signature bar */}
       <div className="border-t border-warm-border pt-3 flex items-center justify-between text-[11px] text-warm-muted">
         <div className="flex items-center space-x-2">
-          <div className="w-5 h-5 rounded-full bg-[#1f1b18] text-amber-400 font-mono text-[9px] flex items-center justify-center font-bold">
+          <div className="w-5 h-5 rounded-full bg-primaryBtn-bg text-primaryBtn-text font-mono text-[9px] flex items-center justify-center font-bold">
             SC
           </div>
           <span className="font-semibold text-warm-text">Sarah Chen (Tech Lead)</span>
@@ -531,3 +531,4 @@ export function ReviewWorkspace({ job, onRefresh }: ReviewWorkspaceProps) {
     </div>
   );
 }
+

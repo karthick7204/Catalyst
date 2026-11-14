@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ThemeProvider } from '../context/ThemeContext';
 
 export const metadata: Metadata = {
   title: 'PatchCraft | Autonomous AI Engineering Agent',
@@ -12,9 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-warm-bg text-warm-text antialiased flex flex-col">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
