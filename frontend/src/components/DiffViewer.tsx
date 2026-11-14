@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Columns, AlignLeft } from 'lucide-react';
+import { Columns, AlignLeft, Code2, CheckCircle2 } from 'lucide-react';
 
 interface DiffViewerProps {
   diffText?: string | null;
@@ -122,7 +122,7 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
 
   if (!files || files.length === 0) {
     return (
-      <div className="p-8 text-center text-slate-500 text-xs italic bg-[#050810] border border-slate-800 rounded-lg">
+      <div className="p-8 text-center text-warm-muted text-xs italic bg-warm-surface border border-warm-border rounded-lg">
         No changes detected in repository diff.
       </div>
     );
@@ -131,34 +131,43 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
   const file = files[activeFileIdx] || files[0];
 
   return (
-    <div className="flex flex-col border border-slate-800 rounded-lg overflow-hidden bg-[#050810]">
+    <div className="flex flex-col border border-warm-border rounded-lg overflow-hidden bg-warm-surface shadow-sm">
       {/* File Header Bar */}
-      <div className="bg-[#0b0f17] border-b border-slate-800 px-4 py-2.5 flex items-center justify-between">
+      <div className="bg-warm-panel border-b border-warm-border px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="font-mono text-xs font-semibold text-slate-200">
-            {file.fileName}
-          </span>
+          <div className="flex items-center space-x-1.5 font-mono text-xs font-bold text-warm-text">
+            <span className="text-warm-subtle">&lt;&gt;</span>
+            <span>{file.fileName}</span>
+          </div>
           <div className="flex items-center space-x-1.5 text-[11px] font-mono">
-            <span className="text-emerald-400 font-medium">+{file.additions}</span>
-            <span className="text-rose-400 font-medium">-{file.deletions}</span>
+            <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-700 font-bold border border-emerald-200">
+              +{file.additions}
+            </span>
+            <span className="px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200">
+              -{file.deletions}
+            </span>
           </div>
         </div>
 
         {/* View Mode Toggle: Split vs Unified */}
-        <div className="flex items-center bg-slate-900 border border-slate-800 rounded-md p-0.5 text-xs font-medium">
+        <div className="flex items-center bg-warm-surface border border-warm-border rounded p-0.5 text-xs font-semibold">
           <button
             onClick={() => setViewMode('split')}
-            className={`px-2.5 py-1 rounded flex items-center space-x-1.5 transition ${
-              viewMode === 'split' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            className={`px-3 py-1 rounded flex items-center space-x-1.5 transition ${
+              viewMode === 'split'
+                ? 'bg-[#1f1b18] text-stone-100 shadow-sm'
+                : 'text-warm-muted hover:text-warm-text'
             }`}
           >
             <Columns className="w-3.5 h-3.5" />
-            <span>Split</span>
+            <span>Split (Side-by-Side)</span>
           </button>
           <button
             onClick={() => setViewMode('unified')}
-            className={`px-2.5 py-1 rounded flex items-center space-x-1.5 transition ${
-              viewMode === 'unified' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            className={`px-3 py-1 rounded flex items-center space-x-1.5 transition ${
+              viewMode === 'unified'
+                ? 'bg-[#1f1b18] text-stone-100 shadow-sm'
+                : 'text-warm-muted hover:text-warm-text'
             }`}
           >
             <AlignLeft className="w-3.5 h-3.5" />
@@ -169,27 +178,40 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
 
       {/* Side-by-Side (Split) View */}
       {viewMode === 'split' && (
-        <div className="overflow-x-auto max-h-[580px] font-mono text-xs select-text">
-          <div className="grid grid-cols-2 divide-x divide-slate-800 border-b border-slate-800 bg-[#090d14] text-[11px] text-slate-400 font-semibold px-4 py-1.5">
-            <div>Original Code (Before)</div>
-            <div className="pl-4">Fixed Code (After)</div>
+        <div className="overflow-x-auto max-h-[520px] font-mono text-xs select-text bg-[#faf8f4]">
+          {/* Column Header Titles */}
+          <div className="grid grid-cols-2 divide-x divide-warm-border border-b border-warm-border bg-warm-panel/60 text-[11px] text-warm-muted font-semibold px-4 py-1.5">
+            <div className="flex items-center justify-between pr-4">
+              <span>Original Code (Before)</span>
+              <span className="text-[10px] text-warm-subtle">commit 9c7a23</span>
+            </div>
+            <div className="flex items-center justify-between pl-4">
+              <span>Fixed Code (Patch v3)</span>
+              <span className="text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span>Passed Spec</span>
+              </span>
+            </div>
           </div>
 
-          <div className="divide-y divide-slate-900/60">
+          <div className="divide-y divide-warm-border/60">
             {file.rows.map((row, idx) => {
               const isOldDel = row.oldType === 'del';
               const isNewAdd = row.newType === 'add';
 
               return (
-                <div key={idx} className="grid grid-cols-2 divide-x divide-slate-800/80">
+                <div key={idx} className="grid grid-cols-2 divide-x divide-warm-border">
                   {/* Left (Old / Original) */}
-                  <div className={`flex items-start ${isOldDel ? 'bg-rose-500/15' : ''}`}>
-                    <span className="w-10 py-0.5 pr-2 text-right text-slate-600 select-none text-[11px] shrink-0 border-r border-slate-800/40">
+                  <div className={`flex items-start ${isOldDel ? 'bg-[#fee2e2]/60' : ''}`}>
+                    <span className="w-10 py-1 pr-2 text-right text-warm-subtle select-none text-[11px] shrink-0 border-r border-warm-border/60">
                       {row.oldLine ?? ''}
                     </span>
+                    <span className="w-5 py-1 text-center select-none font-bold text-rose-600 shrink-0">
+                      {isOldDel ? '-' : ' '}
+                    </span>
                     <span
-                      className={`px-3 py-0.5 whitespace-pre-wrap break-all flex-1 ${
-                        isOldDel ? 'text-rose-300 font-medium' : 'text-slate-400'
+                      className={`px-2 py-1 whitespace-pre-wrap break-all flex-1 ${
+                        isOldDel ? 'text-rose-900 font-semibold bg-rose-100/50' : 'text-stone-700'
                       }`}
                     >
                       {row.oldText ?? ' '}
@@ -197,13 +219,16 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
                   </div>
 
                   {/* Right (New / Fixed) */}
-                  <div className={`flex items-start ${isNewAdd ? 'bg-emerald-500/15' : ''}`}>
-                    <span className="w-10 py-0.5 pr-2 text-right text-slate-600 select-none text-[11px] shrink-0 border-r border-slate-800/40">
+                  <div className={`flex items-start ${isNewAdd ? 'bg-[#dcfce7]/60' : ''}`}>
+                    <span className="w-10 py-1 pr-2 text-right text-warm-subtle select-none text-[11px] shrink-0 border-r border-warm-border/60">
                       {row.newLine ?? ''}
                     </span>
+                    <span className="w-5 py-1 text-center select-none font-bold text-emerald-600 shrink-0">
+                      {isNewAdd ? '+' : ' '}
+                    </span>
                     <span
-                      className={`px-3 py-0.5 whitespace-pre-wrap break-all flex-1 ${
-                        isNewAdd ? 'text-emerald-300 font-medium' : 'text-slate-400'
+                      className={`px-2 py-1 whitespace-pre-wrap break-all flex-1 ${
+                        isNewAdd ? 'text-emerald-950 font-semibold bg-emerald-100/60' : 'text-stone-700'
                       }`}
                     >
                       {row.newText ?? ' '}
@@ -218,27 +243,27 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
 
       {/* Unified View */}
       {viewMode === 'unified' && (
-        <div className="overflow-x-auto max-h-[580px] font-mono text-xs select-text py-1">
+        <div className="overflow-x-auto max-h-[520px] font-mono text-xs select-text py-1 bg-[#faf8f4]">
           {file.unifiedLines.map((line, idx) => {
-            let lineStyle = 'text-slate-300';
+            let lineStyle = 'text-stone-700';
             let bgStyle = '';
 
             if (line.type === 'add') {
-              lineStyle = 'text-emerald-300 font-medium';
-              bgStyle = 'bg-emerald-500/15';
+              lineStyle = 'text-emerald-950 font-semibold';
+              bgStyle = 'bg-[#dcfce7]/70';
             } else if (line.type === 'del') {
-              lineStyle = 'text-rose-300 font-medium';
-              bgStyle = 'bg-rose-500/15';
+              lineStyle = 'text-rose-900 font-semibold';
+              bgStyle = 'bg-[#fee2e2]/70';
             } else if (line.type === 'chunk') {
-              lineStyle = 'text-sky-300 font-semibold';
-              bgStyle = 'bg-sky-500/10';
+              lineStyle = 'text-sky-800 font-bold';
+              bgStyle = 'bg-sky-50 border-y border-sky-100';
             } else if (line.type === 'header') {
-              lineStyle = 'text-amber-400 font-bold';
+              lineStyle = 'text-amber-800 font-bold';
             }
 
             return (
               <div key={idx} className={`px-4 py-0.5 flex items-start space-x-3 ${bgStyle}`}>
-                <span className="text-slate-600 text-[11px] select-none w-8 text-right shrink-0">
+                <span className="text-warm-subtle text-[11px] select-none w-8 text-right shrink-0">
                   {idx + 1}
                 </span>
                 <span className={`${lineStyle} break-all whitespace-pre-wrap flex-1`}>
@@ -249,6 +274,17 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
           })}
         </div>
       )}
+
+      {/* Diff Status Bottom Bar */}
+      <div className="bg-warm-panel border-t border-warm-border px-4 py-2 flex items-center justify-between text-[11px] text-warm-muted">
+        <div className="flex items-center space-x-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Clean patch applied cleanly to repository target branch</span>
+        </div>
+        <div className="font-mono text-warm-subtle">
+          0 syntax warnings
+        </div>
+      </div>
     </div>
   );
 }

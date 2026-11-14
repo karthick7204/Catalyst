@@ -10,12 +10,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: '#0b0f17',
-        surface: '#0f172a',
-        card: '#131d33',
-        brand: {
-          500: '#10b981',
-          600: '#059669',
+        warm: {
+          bg: '#f8f5ee',
+          surface: '#ffffff',
+          panel: '#f3efe6',
+          sidebar: '#1f1b18',
+          sidebarHover: '#2a2420',
+          border: '#e5ded3',
+          borderDark: '#d8cfc2',
+          text: '#221f1d',
+          muted: '#78716c',
+          subtle: '#a8a29e',
+        },
+        badge: {
+          reviewBg: '#fef3c7',
+          reviewText: '#b45309',
+          reviewBorder: '#fde68a',
+          mergedBg: '#dcfce7',
+          mergedText: '#15803d',
+          mergedBorder: '#bbf7d0',
+          fixingBg: '#e0f2fe',
+          fixingText: '#0369a1',
+          fixingBorder: '#bae6fd',
+          failedBg: '#fee2e2',
+          failedText: '#b91c1c',
+          failedBorder: '#fecaca',
         }
       }
     },
@@ -24,4 +43,3 @@ const config: Config = {
 };
 
 export default config;
-
