@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  QUEUED
+  CLONING
+  ANALYZING
+  FIXING
+  AWAITING_APPROVAL
+  APPROVED
+  PUSHED
+  PR_CREATED
+  REJECTED
+  FAILED
+}
+
+model TaskJob {
+  id                    String            @id @default(uuid())
+  linearIssueId         String
+  linearIssueIdentifier String            // e.g. CAT-42
+  linearIssueTitle      String
+  linearIssueDescription String           @db.Text
+  linearIssueUrl        String
+  githubRepo            String            // e.g. owner/repo
+  baseBranch            String            @default("main")
+  fixBranch             String            // e.g. catalyst/fix-CAT-42
+  status                JobStatus         @default(QUEUED)
+  approvalToken         String            @unique
+  diffContent           String?           @db.Text
+  fixSummary            String?           @db.Text
+  testOutput            String?           @db.Text
+  prUrl                 String?
+  error                 String?           @db.Text
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  logs                  AgentActionLog[]
+
+  @@index([linearIssueId])
+  @@index([status])
+}
+
+model AgentActionLog {
+  id         String   @id @default(uuid())
+  jobId      String
+  job        TaskJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  stepNumber Int
+  thought    String?  @db.Text
+  toolName   String?
+  toolInput  String?  @db.Text
+  toolOutput String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([jobId])
+}
+

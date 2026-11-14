@@ -1,20 +1,20 @@
-import { RedisOptions } from 'ioredis';
+import { Redis } from 'ioredis';
 import { config } from './env.js';
+import { logger } from './logger.js';
 
-export function getRedisConnectionOptions(): RedisOptions {
-  if (config.redis.url) {
-    // When using URL string, ioredis parses host, port, db, and auth
-    return {
-      maxRetriesPerRequest: null, // Required by BullMQ
-      enableReadyCheck: false,
-    };
-  }
+export const redisConnection = new Redis({
+  host: config.REDIS_HOST,
+  port: config.REDIS_PORT,
+  password: config.REDIS_PASSWORD || undefined,
+  maxRetriesPerRequest: null,
+  lazyConnect: true
+});
 
-  return {
-    host: config.redis.host,
-    port: config.redis.port,
-    password: config.redis.password,
-    maxRetriesPerRequest: null, // Required by BullMQ
-    enableReadyCheck: false,
-  };
-}
+redisConnection.on('connect', () => {
+  logger.info('Connected to Redis');
+});
+
+redisConnection.on('error', (err) => {
+  logger.error({ err }, 'Redis connection error');
+});
+

@@ -1,36 +1,43 @@
 import { createServer } from './server.js';
 import { config } from './config/env.js';
-import { createRepoProvisioningWorker } from './workers/repoWorker.js';
-import { repoProvisioningQueue } from './queues/repoQueue.js';
+import { logger } from './config/logger.js';
+import { startCatalystWorker } from './queue/worker.js';
+import { prisma } from './config/database.js';
+import { redisConnection } from './config/redis.js';
 
 async function bootstrap() {
-  const app = createServer();
-  const worker = createRepoProvisioningWorker();
+  const server = createServer();
 
-  const server = app.listen(config.port, () => {
-    console.log(`[Catalyst Bug-Fix Pipeline] Server running on port ${config.port}`);
-    console.log(`[Catalyst Bug-Fix Pipeline] Webhook endpoint: POST http://localhost:${config.port}/api/webhooks/linear`);
-    console.log(`[Catalyst Bug-Fix Pipeline] Target trigger label: '${config.triggerLabel}'`);
-    console.log(`[Catalyst Bug-Fix Pipeline] Scratch directory: ${config.scratchDir}`);
-  });
+  // Start background queue worker
+  const worker = startCatalystWorker();
+  logger.info('Catalyst background worker initialized');
 
-  const shutdown = async (signal: string) => {
-    console.log(`\n[Shutdown] Received ${signal}. Gracefully stopping server and worker...`);
-
-    server.close(() => {
-      console.log('[Shutdown] HTTP server closed.');
+  // Start HTTP server
+  try {
+    await server.listen({
+      port: config.PORT,
+      host: config.HOST
     });
+    logger.info(`🚀 Catalyst server listening on http://${config.HOST}:${config.PORT}`);
+    logger.info(`Linear Webhook endpoint ready at: http://${config.HOST}:${config.PORT}/webhooks/linear`);
+  } catch (err) {
+    logger.error({ err }, 'Failed to start server');
+    process.exit(1);
+  }
 
+  // Graceful shutdown handling
+  const shutdown = async (signal: string) => {
+    logger.info(`Received ${signal}, gracefully shutting down...`);
     try {
+      await server.close();
       await worker.close();
-      console.log('[Shutdown] BullMQ worker stopped.');
-
-      await repoProvisioningQueue.close();
-      console.log('[Shutdown] BullMQ queue closed.');
-    } catch (err) {
-      console.error('[Shutdown] Error during shutdown:', err);
-    } finally {
+      await redisConnection.quit();
+      await prisma.$disconnect();
+      logger.info('Catalyst shut down successfully');
       process.exit(0);
+    } catch (err) {
+      logger.error({ err }, 'Error during shutdown');
+      process.exit(1);
     }
   };
 
@@ -39,6 +46,7 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.error('[Fatal] Pipeline failed to start:', err);
+  logger.fatal({ err }, 'Unhandled exception during bootstrap');
   process.exit(1);
 });
+
