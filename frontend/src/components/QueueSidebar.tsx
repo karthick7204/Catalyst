@@ -12,6 +12,18 @@ interface QueueSidebarProps {
   isRefreshing: boolean;
 }
 
+function getDiffStats(diffText?: string | null): { additions: number; deletions: number } {
+  if (!diffText) return { additions: 0, deletions: 0 };
+  let additions = 0;
+  let deletions = 0;
+  const lines = diffText.split('\n');
+  for (const line of lines) {
+    if (line.startsWith('+') && !line.startsWith('+++')) additions++;
+    if (line.startsWith('-') && !line.startsWith('---')) deletions++;
+  }
+  return { additions, deletions };
+}
+
 export function QueueSidebar({
   jobs,
   selectedJobId,
@@ -185,6 +197,8 @@ export function QueueSidebar({
 
           {filteredJobs.map((job) => {
             const isSelected = job.id === selectedJobId;
+            const stats = getDiffStats(job.diffContent);
+
             return (
               <div
                 key={job.id}
@@ -219,7 +233,7 @@ export function QueueSidebar({
                   </span>
 
                   <span className="px-1.5 py-0.5 bg-warm-panel dark:bg-[#1d293d] border border-warm-border dark:border-slate-700 rounded font-mono text-warm-muted dark:text-slate-300">
-                    +2 -2
+                    +{stats.additions} -{stats.deletions}
                   </span>
                 </div>
               </div>
